@@ -1,0 +1,127 @@
+/* =============================================================
+   Intent - YouTube Focus Extension
+   Styles for goal overlay (injected into YouTube pages)
+   All classes prefixed with "intent-" to avoid CSS conflicts
+   ============================================================= */
+
+/* Full-screen overlay — blurs and dims YouTube behind it */
+#intent-goal-overlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background: rgba(0, 0, 0, 0.75) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  z-index: 99999 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  animation: intent-fade-in 0.3s ease-out !important;
+}
+
+/* Fade-out class added before removal */
+#intent-goal-overlay.intent-overlay-hide {
+  animation: intent-fade-out 0.3s ease-in forwards !important;
+}
+
+/* Centered card */
+.intent-overlay-card {
+  background: #181818 !important;
+  border: 1px solid #333 !important;
+  border-radius: 16px !important;
+  padding: 36px 32px !important;
+  width: 380px !important;
+  max-width: 90vw !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5) !important;
+  text-align: center !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+}
+
+/* Logo */
+.intent-overlay-logo {
+  font-size: 28px !important;
+  font-weight: 700 !important;
+  color: #fff !important;
+  margin: 0 0 6px 0 !important;
+  letter-spacing: -0.5px !important;
+}
+
+/* Tagline */
+.intent-overlay-tagline {
+  font-size: 14px !important;
+  color: #888 !important;
+  margin: 0 0 24px 0 !important;
+}
+
+/* Text input */
+.intent-overlay-input {
+  width: 100% !important;
+  padding: 14px 16px !important;
+  border: 1px solid #333 !important;
+  border-radius: 10px !important;
+  background: #0f0f0f !important;
+  color: #e8e8e8 !important;
+  font-size: 15px !important;
+  outline: none !important;
+  margin-bottom: 14px !important;
+  box-sizing: border-box !important;
+  transition: border-color 0.2s !important;
+}
+
+.intent-overlay-input:focus {
+  border-color: #3ea6ff !important;
+}
+
+.intent-overlay-input::placeholder {
+  color: #555 !important;
+}
+
+/* Buttons */
+.intent-overlay-btn {
+  display: block !important;
+  width: 100% !important;
+  padding: 12px 18px !important;
+  border: none !important;
+  border-radius: 10px !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: background 0.2s, opacity 0.2s !important;
+  box-sizing: border-box !important;
+}
+
+.intent-overlay-btn + .intent-overlay-btn {
+  margin-top: 10px !important;
+}
+
+.intent-overlay-btn-primary {
+  background: #3ea6ff !important;
+  color: #0f0f0f !important;
+}
+
+.intent-overlay-btn-primary:hover {
+  background: #65b8ff !important;
+}
+
+.intent-overlay-btn-secondary {
+  background: #272727 !important;
+  color: #aaa !important;
+}
+
+.intent-overlay-btn-secondary:hover {
+  background: #333 !important;
+  color: #ccc !important;
+}
+
+/* Animations */
+@keyframes intent-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes intent-fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}

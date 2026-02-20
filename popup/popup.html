@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="popup.css">
+  <title>Intent</title>
+</head>
+<body>
+  <div class="container">
+    <h1 class="logo">Intent</h1>
+    <p class="tagline">What brings you to YouTube?</p>
+
+    <!-- Goal input view (shown when no active goal) -->
+    <div id="goal-input-view">
+      <input
+        type="text"
+        id="goal-text"
+        placeholder="e.g. Learn React hooks, Study calculus..."
+        autocomplete="off"
+      />
+      <button id="set-goal-btn" class="btn btn-primary">Set Goal</button>
+      <button id="casual-btn" class="btn btn-secondary">Just Browsing</button>
+    </div>
+
+    <!-- Active goal view (shown when goal is set) -->
+    <div id="active-goal-view" class="hidden">
+      <div class="active-goal-card">
+        <span class="label">Current Goal</span>
+        <p id="current-goal-text"></p>
+      </div>
+      <button id="clear-goal-btn" class="btn btn-secondary">Clear Goal</button>
+    </div>
+
+    <!-- Casual mode view -->
+    <div id="casual-view" class="hidden">
+      <div class="casual-card">
+        <span class="label">Mode</span>
+        <p>Casual Browsing</p>
+      </div>
+      <button id="set-new-goal-btn" class="btn btn-primary">Set a Goal Instead</button>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

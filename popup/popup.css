@@ -1,0 +1,120 @@
+/* Reset & base */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  width: 320px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #0f0f0f;
+  color: #e8e8e8;
+}
+
+.container {
+  padding: 24px 20px;
+}
+
+/* Logo */
+.logo {
+  font-size: 22px;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 4px;
+}
+
+.tagline {
+  font-size: 13px;
+  color: #888;
+  margin-bottom: 20px;
+}
+
+/* Text input */
+#goal-text {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #333;
+  border-radius: 8px;
+  background: #1a1a1a;
+  color: #e8e8e8;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+  margin-bottom: 12px;
+}
+
+#goal-text:focus {
+  border-color: #3ea6ff;
+}
+
+#goal-text::placeholder {
+  color: #555;
+}
+
+/* Buttons */
+.btn {
+  display: block;
+  width: 100%;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, opacity 0.2s;
+}
+
+.btn + .btn {
+  margin-top: 8px;
+}
+
+.btn-primary {
+  background: #3ea6ff;
+  color: #0f0f0f;
+}
+
+.btn-primary:hover {
+  background: #65b8ff;
+}
+
+.btn-secondary {
+  background: #272727;
+  color: #aaa;
+}
+
+.btn-secondary:hover {
+  background: #333;
+  color: #ccc;
+}
+
+/* Cards for active goal / casual mode */
+.active-goal-card,
+.casual-card {
+  background: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 14px;
+  margin-bottom: 12px;
+}
+
+.label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #3ea6ff;
+  font-weight: 600;
+}
+
+.active-goal-card p,
+.casual-card p {
+  font-size: 15px;
+  color: #e8e8e8;
+  margin-top: 6px;
+  line-height: 1.4;
+}
+
+/* Utility */
+.hidden {
+  display: none !important;
+}
