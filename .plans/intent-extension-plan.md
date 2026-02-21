@@ -6,7 +6,7 @@ Chrome extension (MV3) that helps users stay focused on YouTube. On every YouTub
 ## Progress
 - [x] Phase 1: Scaffold + Popup
 - [x] Phase 1.5: YouTube Goal Overlay
-- [ ] Phase 2: YouTube SPA Navigation Detection
+- [x] Phase 2: YouTube SPA Navigation Detection
 - [ ] Phase 3: Deviation Detection
 - [ ] Phase 4: Nudge UI
 - [ ] Phase 5: Stats + Polish
@@ -92,7 +92,7 @@ intent-youtube-extension/
 
 ---
 
-## Phase 2: YouTube SPA Navigation Detection  ⬅️ NEXT
+## Phase 2: YouTube SPA Navigation Detection  ✅ DONE
 
 ### Goal
 Detect every video navigation in YouTube's SPA.
@@ -113,7 +113,7 @@ Console logs on every YouTube navigation.
 
 ---
 
-## Phase 3: Deviation Detection
+## Phase 3: Deviation Detection  ⬅️ NEXT
 
 ### Goal
 Compare current video against user's stated goal using keyword matching.
