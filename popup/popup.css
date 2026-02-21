@@ -114,6 +114,66 @@ body {
   line-height: 1.4;
 }
 
+/* Stats row — 3 counters in a horizontal row */
+.stats-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.stat {
+  flex: 1;
+  background: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 10px 8px;
+  text-align: center;
+}
+
+.stat-value {
+  display: block;
+  font-size: 20px;
+  font-weight: 700;
+  color: #e8e8e8;
+}
+
+.stat-on {
+  color: #4caf50;
+}
+
+.stat-off {
+  color: #f44336;
+}
+
+.stat-label {
+  display: block;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #888;
+  margin-top: 4px;
+}
+
+/* Subtle text button for Reset Stats */
+.btn-text {
+  display: block;
+  width: 100%;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #666;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-top: 4px;
+  transition: color 0.2s;
+}
+
+.btn-text:hover {
+  color: #aaa;
+}
+
 /* Utility */
 .hidden {
   display: none !important;

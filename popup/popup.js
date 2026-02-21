@@ -11,6 +11,12 @@ const casualBtn = document.getElementById('casual-btn');
 const clearGoalBtn = document.getElementById('clear-goal-btn');
 const setNewGoalBtn = document.getElementById('set-new-goal-btn');
 
+// Stats elements (Phase 5)
+const statWatched = document.getElementById('stat-watched');
+const statOnTopic = document.getElementById('stat-on-topic');
+const statOffTopic = document.getElementById('stat-off-topic');
+const resetStatsBtn = document.getElementById('reset-stats-btn');
+
 // Show the correct view based on current state
 function showView(state) {
   goalInputView.classList.add('hidden');
@@ -30,10 +36,21 @@ function showView(state) {
   }
 }
 
-// Load current state from storage on popup open
-chrome.storage.local.get(['goal', 'active', 'casual'], (data) => {
-  showView(data);
-});
+// Load current state + stats from storage on popup open
+chrome.storage.local.get(
+  ['goal', 'active', 'casual', 'videosWatched', 'onTopic', 'offTopic'],
+  (data) => {
+    showView(data);
+    updateStats(data);
+  }
+);
+
+// Populate stat counters in the active-goal view
+function updateStats(data) {
+  statWatched.textContent = data.videosWatched || 0;
+  statOnTopic.textContent = data.onTopic || 0;
+  statOffTopic.textContent = data.offTopic || 0;
+}
 
 // "Set Goal" — save goal and switch to active view
 setGoalBtn.addEventListener('click', () => {
@@ -72,5 +89,13 @@ setNewGoalBtn.addEventListener('click', () => {
   const state = { goal: null, active: false, casual: false };
   chrome.storage.local.set(state, () => {
     showView(state);
+  });
+});
+
+// "Reset Stats" — zero out counters without clearing the goal
+resetStatsBtn.addEventListener('click', () => {
+  const reset = { videosWatched: 0, onTopic: 0, offTopic: 0 };
+  chrome.storage.local.set(reset, () => {
+    updateStats(reset);
   });
 });

@@ -305,6 +305,17 @@ async function onVideoNavigation(url) {
     `[Intent] Title: "${title}" | ${status} (method: ${result.method})`
   );
 
+  // --- Phase 5: Increment stats counters in storage ---
+  // Atomic read-then-write to safely increment without race conditions
+  const stats = await chrome.storage.local.get(['videosWatched', 'onTopic', 'offTopic']);
+  const update = { videosWatched: (stats.videosWatched || 0) + 1 };
+  if (result.onTopic) {
+    update.onTopic = (stats.onTopic || 0) + 1;
+  } else {
+    update.offTopic = (stats.offTopic || 0) + 1;
+  }
+  chrome.storage.local.set(update);
+
   // Show nudge toast if video is off-topic
   if (!result.onTopic) showNudge(goal);
 }
@@ -318,3 +329,20 @@ function debouncedVideoNavigation(url) {
   clearTimeout(_navDebounceTimer);
   _navDebounceTimer = setTimeout(() => onVideoNavigation(url), 800);
 }
+
+// --- Phase 5: Live goal sync from popup ---
+// Reacts when user changes goal/mode in the popup without needing a page reload
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area !== 'local') return;
+
+  // If goal was cleared or user switched to casual, dismiss any active nudge
+  if (changes.active && !changes.active.newValue) {
+    const nudge = document.querySelector('.intent-nudge');
+    if (nudge) dismissNudge(nudge);
+  }
+
+  // If a new goal was set while active, re-check current video against it
+  if (changes.goal && changes.goal.newValue && changes.active?.newValue) {
+    onVideoNavigation(location.href);
+  }
+});

@@ -29,7 +29,25 @@
         <span class="label">Current Goal</span>
         <p id="current-goal-text"></p>
       </div>
+
+      <!-- Phase 5: Session stats -->
+      <div class="stats-row">
+        <div class="stat">
+          <span class="stat-value" id="stat-watched">0</span>
+          <span class="stat-label">Videos</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value stat-on" id="stat-on-topic">0</span>
+          <span class="stat-label">On-topic</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value stat-off" id="stat-off-topic">0</span>
+          <span class="stat-label">Off-topic</span>
+        </div>
+      </div>
+
       <button id="clear-goal-btn" class="btn btn-secondary">Clear Goal</button>
+      <button id="reset-stats-btn" class="btn btn-text">Reset Stats</button>
     </div>
 
     <!-- Casual mode view -->

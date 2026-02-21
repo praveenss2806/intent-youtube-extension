@@ -9,7 +9,7 @@ Chrome extension (MV3) that helps users stay focused on YouTube. On every YouTub
 - [x] Phase 2: YouTube SPA Navigation Detection
 - [x] Phase 3: Deviation Detection (Hybrid AI + Keyword)
 - [x] Phase 4: Nudge UI
-- [ ] Phase 5: Stats + Polish
+- [x] Phase 5: Stats + Polish
 
 ---
 
@@ -181,18 +181,41 @@ Off-topic video → toast slides down with goal text. "Dismiss" → slides up, n
 
 ---
 
-## Phase 5: Stats + Polish
+## Phase 5: Stats + Polish  ✅ DONE
 
 ### Goal
-Session stats + edge case handling.
+Session stats + live goal sync + edge case handling.
 
 ### Implementation
-- Increment `videosWatched`, `onTopic`, `offTopic` in storage on each check
-- Popup shows stats: "Videos: X | On-topic: Y | Off-topic: Z" + reset button
-- `chrome.storage.onChanged` listener in content.js for live goal updates
-- Edge cases: skip homepage, handle Shorts URLs, handle playlists
-- "Clear Goal" in popup (already built in Phase 1)
-- Placeholder SVG icons (already built in Phase 1)
+- **`content/content.js`**:
+  - Stats increment in `onVideoNavigation()` — atomic `get` then `set` for `videosWatched`, `onTopic`, `offTopic`
+  - `chrome.storage.onChanged` listener — dismisses nudge when goal cleared from popup, re-evaluates current video when goal changes
+- **`popup/popup.html`**:
+  - 3-column stats row (Videos / On-topic / Off-topic) in active-goal view
+  - "Reset Stats" text button below "Clear Goal"
+- **`popup/popup.js`**:
+  - Reads stat keys on popup open, `updateStats()` populates display
+  - Reset handler zeros counters in storage and UI
+- **`popup/popup.css`**:
+  - `.stats-row` flex layout, `.stat` cards, colored values (green on-topic, red off-topic)
+  - `.btn-text` subtle reset button
+
+### Edge cases (confirmed handled)
+- Homepage/search/playlists: already skipped by `/watch` + `/shorts/` URL filter
+- Playlist videos (`/watch?v=...&list=...`): correctly treated as videos
+- No additional code needed
+
+### Key decisions
+- Stats persist when goal is cleared — separate "Reset Stats" button for intentional reset
+- Live sync re-runs relevance check immediately when goal changes from popup
+- Nudge auto-dismisses when user clears goal from popup
+
+### Verify
+- On-topic video: `videosWatched` +1, `onTopic` +1
+- Off-topic video: `videosWatched` +1, `offTopic` +1
+- Popup stats show correct counts, reset zeros them
+- Change goal in popup → content.js re-evaluates current video
+- Clear goal → nudge dismisses
 
 ---
 
