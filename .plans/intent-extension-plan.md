@@ -7,7 +7,7 @@ Chrome extension (MV3) that helps users stay focused on YouTube. On every YouTub
 - [x] Phase 1: Scaffold + Popup
 - [x] Phase 1.5: YouTube Goal Overlay
 - [x] Phase 2: YouTube SPA Navigation Detection
-- [ ] Phase 3: Deviation Detection
+- [x] Phase 3: Deviation Detection (Hybrid AI + Keyword)
 - [ ] Phase 4: Nudge UI
 - [ ] Phase 5: Stats + Polish
 
@@ -22,8 +22,8 @@ intent-youtube-extension/
     popup.js                 # State mgmt via chrome.storage.local
     popup.css                # Dark theme (YouTube-like)
   content/
-    content.js               # Goal overlay + (future) nav detection, deviation, nudge
-    injector.js              # [stub] Patches History API (MAIN world, document_start)
+    content.js               # Goal overlay + SPA nav detection + (future) deviation, nudge
+    injector.js              # History API patching fallback (MAIN world, document_start)
     nudge.css                # Overlay styles + (future) nudge styles
   background/
     background.js            # Service worker — inits defaults on install
@@ -98,35 +98,54 @@ intent-youtube-extension/
 Detect every video navigation in YouTube's SPA.
 
 ### Implementation
-- **`content/injector.js`** (MAIN world, `document_start`):
+- **Primary: `yt-navigate-finish`** (YouTube's built-in SPA event)
+  - `content.js` listens for `yt-navigate-finish` on `document` — works directly in ISOLATED world
+  - Most reliable method; no cross-world bridge needed
+- **Fallback: `content/injector.js`** (MAIN world, `document_start`):
   - Override `history.pushState` + `history.replaceState`
   - Dispatch `intent-url-change` CustomEvent on `document` (bridges MAIN→ISOLATED world)
   - Listen `popstate` for back/forward
+  - Note: History API patching alone was unreliable on YouTube — may not fire
 - **`content/content.js`** (ISOLATED world, `document_idle`):
-  - Listen for `intent-url-change` event
-  - Handle initial page load
+  - Listen for both `yt-navigate-finish` and `intent-url-change` events
+  - Handle initial page load via `onVideoNavigation(location.href)`
   - Filter: only act on `/watch` and `/shorts/` URLs
-  - Debounce 800ms
+  - Debounce 800ms — YouTube fires multiple events per navigation
 
 ### Verify
-Console logs on every YouTube navigation.
+`[Intent] Video navigation: <url>` in console on every YouTube video click.
 
 ---
 
-## Phase 3: Deviation Detection  ⬅️ NEXT
+## Phase 3: Deviation Detection (Hybrid AI + Keyword)  ✅ DONE
 
 ### Goal
-Compare current video against user's stated goal using keyword matching.
+Compare current video against user's goal. Primary: Chrome Built-in AI (Gemini Nano). Fallback: keyword matching.
 
-### Implementation (in `content/content.js`)
-- Extract video title from `document.title` → strip " - YouTube"
-- Split goal into keywords, remove stop words, lowercase
-- Relevance = matched keywords / total goal keywords
-- Threshold: relevance < 0.3 → off-topic
-- Wait 500ms after navigation for title to update
+### Implementation
+- **`content/content.js`** (ISOLATED world):
+  - `STOP_WORDS` set (26 common English words)
+  - `extractKeywords(text)` — lowercase, split, filter stops
+  - `getVideoTitle()` — `document.title` minus " - YouTube"
+  - `calculateRelevance(goalKw, titleKw)` — matched / total ratio
+  - `checkRelevanceKeyword(goal, title)` — threshold: < 0.3 = off-topic
+  - `requestAIRelevanceCheck(goal, title)` — dispatches `intent-check-relevance` to MAIN world, waits for `intent-relevance-result` with matching `requestId`, 3s timeout
+  - `onVideoNavigation(url)` — async, reads goal from storage, waits 500ms for title update, tries AI → falls back to keyword
 
-### Stop words list
-`a, an, the, to, is, how, for, and, in, on, of, it, i, my, me, we, do, be, so, no, or, if, by, at, up, as`
+- **`content/injector.js`** (MAIN world):
+  - `AI_SYSTEM_PROMPT` — classify ON_TOPIC/OFF_TOPIC, lenient bias
+  - `getAISession()` — checks `LanguageModel` API availability, creates cached session
+  - `intent-check-relevance` listener — runs AI prompt, dispatches result back with `requestId`
+  - Graceful error handling — nulls stale session, sends `available: false`
+
+### Key decisions
+- Hybrid approach: AI-first with keyword fallback ensures it works on any Chrome version
+- `requestId` counter prevents result mismatches during rapid navigation
+- 3s timeout covers AI model download delay — keyword fallback activates while model loads
+- AI prompt biased lenient (defaults to ON_TOPIC on ambiguous response) to avoid false nudges
+
+### Verify
+Console on video navigation: `[Intent] Title: "..." | ON-TOPIC/OFF-TOPIC (method: ai/keyword)`
 
 ---
 
@@ -172,7 +191,7 @@ Session stats + edge case handling.
                                               |
                                    [content.js listens onChanged]
                                               |
-[injector.js] --intent-url-change--> [content.js]
+[yt-navigate-finish / injector.js] --> [content.js]
                                               |
                                    [extract title, keyword match]
                                               |

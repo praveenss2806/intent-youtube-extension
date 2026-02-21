@@ -6,9 +6,25 @@ YouTube is a **Single Page Application (SPA)**. When you click a video, YouTube 
 
 We need a way to detect these in-app navigations.
 
-## The Solution: History API Patching
+## The Solution: Two Approaches
 
-Browsers have a `history` object with `pushState()` and `replaceState()` methods. SPAs like YouTube call these to change the URL without reloading. We **monkey-patch** (override) these methods to fire a custom event every time YouTube navigates.
+### Primary: `yt-navigate-finish` (YouTube's own event)
+
+YouTube dispatches a custom `yt-navigate-finish` event on `document` every time it completes a SPA navigation. Since this event fires on the DOM (shared between all worlds), our ISOLATED world content script can listen for it directly:
+
+```js
+document.addEventListener('yt-navigate-finish', () => {
+  debouncedVideoNavigation(location.href);
+});
+```
+
+This is the most reliable approach — no cross-world bridging needed.
+
+### Fallback: History API Patching (`injector.js`)
+
+Browsers have a `history` object with `pushState()` and `replaceState()` methods. SPAs call these to change the URL without reloading. We **monkey-patch** (override) these methods to fire a custom event.
+
+**Why a fallback?** During testing, History API patching alone was unreliable on YouTube — the patched methods didn't always fire. This may be due to YouTube's CSP or script execution order. We keep it as a fallback in case `yt-navigate-finish` is ever removed.
 
 ## Two Worlds, One Bridge
 
@@ -55,6 +71,13 @@ Everything is wrapped in an **IIFE** `(function() { ... })()` to avoid leaking v
 
 ## How content.js Handles It
 
+### Dual Listeners
+We listen for **both** events for maximum reliability:
+1. `yt-navigate-finish` — YouTube's native SPA event (primary)
+2. `intent-url-change` — our injector's custom event (fallback)
+
+Both call the same debounced handler, so duplicate events are harmlessly collapsed.
+
 ### Filtering
 Not every URL change matters. We only care about **video pages**:
 - `/watch?v=...` — regular videos
@@ -63,17 +86,17 @@ Not every URL change matters. We only care about **video pages**:
 Home page, search results, channel pages → ignored.
 
 ### Debouncing
-YouTube sometimes fires **multiple** `pushState` calls for a single navigation (e.g. updating URL params). We use an 800ms debounce: wait for the URL changes to settle, then process only the final URL.
+YouTube sometimes fires **multiple** events for a single navigation. We use an 800ms debounce: wait for events to settle, then process only the final URL.
 
 ```
-Click video → pushState fires → timer starts (800ms)
-             → pushState fires again → timer resets (800ms)
+Click video → event fires → timer starts (800ms)
+             → event fires again → timer resets (800ms)
              → ... quiet ...
              → 800ms passes → onVideoNavigation() runs once
 ```
 
 ### Initial Page Load
-When `content.js` first runs (on a full page load), the injector hasn't dispatched any events yet. So we manually call `onVideoNavigation(location.href)` to handle the case where the user navigated directly to a video URL.
+When `content.js` first runs (on a full page load), no events have been dispatched yet. So we manually call `onVideoNavigation(location.href)` to handle the case where the user navigated directly to a video URL.
 
 ## What Happens Now
 

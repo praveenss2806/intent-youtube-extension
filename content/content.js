@@ -3,6 +3,92 @@
 // Content script: runs in ISOLATED world on every YouTube page
 // =============================================================
 
+// --- Phase 3: Deviation detection helpers ---
+
+// Common English words that don't carry topical meaning
+const STOP_WORDS = new Set([
+  'a','an','the','to','is','how','for','and','in','on',
+  'of','it','i','my','me','we','do','be','so','no',
+  'or','if','by','at','up','as',
+]);
+
+/**
+ * Extracts meaningful keywords from text.
+ * Lowercases, splits on non-alphanumeric chars, removes stop words.
+ */
+function extractKeywords(text) {
+  return text
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .filter(w => w.length > 1 && !STOP_WORDS.has(w));
+}
+
+/**
+ * Gets the current video title from the page tab title.
+ * YouTube sets document.title to "Video Title - YouTube".
+ */
+function getVideoTitle() {
+  return document.title.replace(/ - YouTube$/, '').trim();
+}
+
+/**
+ * Calculates what fraction of goal keywords appear in the title.
+ * Returns 1.0 if goal has no keywords (e.g. all stop words).
+ */
+function calculateRelevance(goalKw, titleKw) {
+  if (goalKw.length === 0) return 1;
+  const titleSet = new Set(titleKw);
+  const matched = goalKw.filter(w => titleSet.has(w)).length;
+  return matched / goalKw.length;
+}
+
+/**
+ * Keyword-based relevance check (fallback when AI is unavailable).
+ * Threshold: relevance < 0.3 = off-topic.
+ */
+function checkRelevanceKeyword(goal, title) {
+  const goalKw = extractKeywords(goal);
+  const titleKw = extractKeywords(title);
+  const relevance = calculateRelevance(goalKw, titleKw);
+  return { onTopic: relevance >= 0.3, relevance, method: 'keyword' };
+}
+
+// --- Phase 3B: AI relevance bridge (ISOLATED → MAIN world) ---
+
+// Incrementing ID to match each request with its response
+let _relevanceRequestId = 0;
+
+/**
+ * Asks injector.js (MAIN world) to check relevance via Chrome Built-in AI.
+ * Returns a Promise that resolves with the AI result or { available: false }
+ * if AI is unavailable or times out (3s).
+ */
+function requestAIRelevanceCheck(goal, title) {
+  const requestId = ++_relevanceRequestId;
+
+  return new Promise((resolve) => {
+    // One-shot listener — only accept the response matching our requestId
+    const handler = (e) => {
+      if (e.detail.requestId !== requestId) return; // not our response
+      document.removeEventListener('intent-relevance-result', handler);
+      clearTimeout(timeout);
+      resolve(e.detail);
+    };
+    document.addEventListener('intent-relevance-result', handler);
+
+    // If AI takes >3s (model loading, etc.), fall back to keyword matching
+    const timeout = setTimeout(() => {
+      document.removeEventListener('intent-relevance-result', handler);
+      resolve({ available: false, reason: 'timeout' });
+    }, 3000);
+
+    // Dispatch request to MAIN world (injector.js listens for this)
+    document.dispatchEvent(new CustomEvent('intent-check-relevance', {
+      detail: { goal, title, requestId },
+    }));
+  });
+}
+
 // --- Phase 1.5: Goal overlay ---
 showGoalOverlay();
 
@@ -109,13 +195,41 @@ function dismissOverlay(overlay) {
 
 /**
  * Called on every detected video navigation.
- * Filters for watch/shorts URLs only — ignores home, search, channels, etc.
+ * Filters for watch/shorts URLs, then checks relevance against user's goal.
  */
-function onVideoNavigation(url) {
+async function onVideoNavigation(url) {
   const isVideo = url.includes('/watch') || url.includes('/shorts/');
   if (!isVideo) return;
 
-  console.log('[Intent] Video navigation:', url);
+  // Read current goal state — skip if no active goal (casual mode or no choice yet)
+  const { goal, active } = await chrome.storage.local.get(['goal', 'active']);
+  if (!active || !goal) return;
+
+  // Wait for YouTube to update document.title after SPA navigation
+  await new Promise(resolve => setTimeout(resolve, 500));
+
+  const title = getVideoTitle();
+  if (!title) return; // safety: title not available yet
+
+  // Hybrid: try Chrome AI first, fall back to keyword matching
+  let result;
+  const aiResult = await requestAIRelevanceCheck(goal, title);
+
+  if (aiResult.available) {
+    // AI responded — use its verdict
+    result = { onTopic: aiResult.onTopic, method: aiResult.method };
+  } else {
+    // AI unavailable (old Chrome, timeout, error) — keyword fallback
+    console.log(`[Intent] AI unavailable (${aiResult.reason}), using keyword fallback`);
+    result = checkRelevanceKeyword(goal, title);
+  }
+
+  const status = result.onTopic ? 'ON-TOPIC' : 'OFF-TOPIC';
+  console.log(
+    `[Intent] Title: "${title}" | ${status} (method: ${result.method})`
+  );
+
+  // TODO Phase 4: if (!result.onTopic) showNudge(goal, title);
 }
 
 /**
