@@ -8,7 +8,7 @@ Chrome extension (MV3) that helps users stay focused on YouTube. On every YouTub
 - [x] Phase 1.5: YouTube Goal Overlay
 - [x] Phase 2: YouTube SPA Navigation Detection
 - [x] Phase 3: Deviation Detection (Hybrid AI + Keyword)
-- [ ] Phase 4: Nudge UI
+- [x] Phase 4: Nudge UI
 - [ ] Phase 5: Stats + Polish
 
 ---
@@ -149,20 +149,35 @@ Console on video navigation: `[Intent] Title: "..." | ON-TOPIC/OFF-TOPIC (method
 
 ---
 
-## Phase 4: Nudge UI
+## Phase 4: Nudge UI  ✅ DONE
 
 ### Goal
 Non-intrusive dismissible banner when deviation detected.
 
 ### Implementation
-- **`content/nudge.css`**: Fixed top-center toast, dark bg, z-index 9999, slide animation
-- **Nudge DOM** (created in `content.js`):
-  - Message: "You're drifting from your goal: **[goal]**"
-  - "Dismiss" button → hide + add video to cooldown set
-  - "Back on Track" button → navigate to YouTube search with goal
+- **`content/nudge.css`**:
+  - `.intent-nudge` — fixed top-center toast, dark bg (#181818), z-index 9999
+  - `intent-slide-down` / `intent-slide-up` keyframe animations
+  - `.intent-nudge-message` — white text, goal highlighted in blue (#3ea6ff)
+  - `.intent-nudge-btn-action` — blue "Back on Track" button
+  - `.intent-nudge-btn-dismiss` — subtle gray "Dismiss" button
+- **`content/content.js`**:
+  - `_dismissedVideos` Set — tracks dismissed URLs per page session
+  - `showNudge(goal)` — creates toast DOM, appends to body, sets up button handlers
+  - `dismissNudge(nudge)` — slide-up animation + remove from DOM
+  - "Back on Track" → `window.location.href` to YouTube search (same tab)
+  - "Dismiss" → adds URL to cooldown, slides out
   - Auto-dismiss after 10s
-- All classes prefixed `intent-` with `!important`
-- In-memory dismissed set (per page session) prevents re-nudge on same video
+  - Prevents stacking (removes existing nudge before showing new one)
+
+### Key decisions
+- Same-tab navigation for "Back on Track" — stronger nudge, removes distraction
+- Slide-down from top — more noticeable than fade-in
+- Per-URL cooldown in memory — dismissed video won't re-trigger until full page reload
+- Auto-dismiss 10s — non-intrusive, doesn't block YouTube permanently
+
+### Verify
+Off-topic video → toast slides down with goal text. "Dismiss" → slides up, no re-nudge. "Back on Track" → YouTube search. 10s → auto-dismiss.
 
 ---
 

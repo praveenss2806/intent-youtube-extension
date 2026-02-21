@@ -53,6 +53,70 @@ function checkRelevanceKeyword(goal, title) {
   return { onTopic: relevance >= 0.3, relevance, method: 'keyword' };
 }
 
+// --- Phase 4: Nudge toast for off-topic videos ---
+
+// Tracks dismissed video URLs per page session — won't re-nudge the same video
+const _dismissedVideos = new Set();
+let _nudgeAutoDismissTimer = null;
+
+/**
+ * Shows a slide-down toast banner when the user navigates to an off-topic video.
+ * Includes "Back on Track" (YouTube search) and "Dismiss" buttons.
+ * Auto-dismisses after 10 seconds.
+ */
+function showNudge(goal) {
+  const currentUrl = location.href;
+
+  // Skip if user already dismissed nudge for this video
+  if (_dismissedVideos.has(currentUrl)) return;
+
+  // Remove any existing nudge to prevent stacking
+  const existing = document.querySelector('.intent-nudge');
+  if (existing) existing.remove();
+  clearTimeout(_nudgeAutoDismissTimer);
+
+  // Build nudge toast DOM
+  const nudge = document.createElement('div');
+  nudge.className = 'intent-nudge';
+  nudge.innerHTML = `
+    <p class="intent-nudge-message">
+      You're drifting from your goal: <strong>${goal}</strong>
+    </p>
+    <div class="intent-nudge-actions">
+      <button class="intent-nudge-btn-dismiss">Dismiss</button>
+      <button class="intent-nudge-btn-action">Back on Track</button>
+    </div>
+  `;
+
+  document.body.appendChild(nudge);
+
+  // "Back on Track" — navigate to YouTube search for the goal (same tab)
+  nudge.querySelector('.intent-nudge-btn-action').addEventListener('click', () => {
+    window.location.href =
+      'https://www.youtube.com/results?search_query=' + encodeURIComponent(goal);
+  });
+
+  // "Dismiss" — slide out + add to cooldown so this video won't trigger again
+  nudge.querySelector('.intent-nudge-btn-dismiss').addEventListener('click', () => {
+    _dismissedVideos.add(currentUrl);
+    dismissNudge(nudge);
+  });
+
+  // Auto-dismiss after 10 seconds if user doesn't interact
+  _nudgeAutoDismissTimer = setTimeout(() => dismissNudge(nudge), 10000);
+}
+
+/**
+ * Smoothly removes the nudge toast with a slide-up animation.
+ */
+function dismissNudge(nudge) {
+  if (!nudge || !nudge.parentNode) return; // already removed
+  clearTimeout(_nudgeAutoDismissTimer);
+  nudge.classList.add('intent-nudge-hide');
+  // Remove from DOM after slide-up animation completes
+  setTimeout(() => nudge.remove(), 300);
+}
+
 // --- Phase 3B: AI relevance bridge (ISOLATED → MAIN world) ---
 
 // Incrementing ID to match each request with its response
@@ -120,6 +184,18 @@ function showGoalOverlay() {
 
   // Don't double-inject if overlay already exists
   if (document.getElementById('intent-goal-overlay')) return;
+
+  // Show overlay once per browser session (resets when Chrome restarts)
+  if (sessionStorage.getItem('intent-overlay-shown')) return;
+  sessionStorage.setItem('intent-overlay-shown', '1');
+
+  createOverlayDOM();
+}
+
+/**
+ * Builds and injects the overlay DOM. Called only when no goal/casual state exists.
+ */
+function createOverlayDOM() {
 
   // Create the overlay container
   const overlay = document.createElement('div');
@@ -229,7 +305,8 @@ async function onVideoNavigation(url) {
     `[Intent] Title: "${title}" | ${status} (method: ${result.method})`
   );
 
-  // TODO Phase 4: if (!result.onTopic) showNudge(goal, title);
+  // Show nudge toast if video is off-topic
+  if (!result.onTopic) showNudge(goal);
 }
 
 /**

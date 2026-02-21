@@ -115,7 +115,7 @@
   color: #ccc !important;
 }
 
-/* Animations */
+/* Animations — Overlay */
 @keyframes intent-fade-in {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -124,4 +124,97 @@
 @keyframes intent-fade-out {
   from { opacity: 1; }
   to { opacity: 0; }
+}
+
+/* =============================================================
+   Nudge toast — non-intrusive banner for off-topic videos
+   ============================================================= */
+
+/* Toast container — fixed top-center, slides down from above viewport */
+.intent-nudge {
+  position: fixed !important;
+  top: 16px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  z-index: 9999 !important;
+  background: #181818 !important;
+  border: 1px solid #333 !important;
+  border-radius: 12px !important;
+  padding: 16px 20px !important;
+  max-width: 500px !important;
+  width: max-content !important;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.6) !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  animation: intent-slide-down 0.3s ease-out !important;
+}
+
+/* Slide-out class added before removal */
+.intent-nudge.intent-nudge-hide {
+  animation: intent-slide-up 0.3s ease-in forwards !important;
+}
+
+/* Message text */
+.intent-nudge-message {
+  color: #e8e8e8 !important;
+  font-size: 14px !important;
+  line-height: 1.4 !important;
+  margin: 0 0 12px 0 !important;
+}
+
+.intent-nudge-message strong {
+  color: #3ea6ff !important;
+  font-weight: 600 !important;
+}
+
+/* Button row */
+.intent-nudge-actions {
+  display: flex !important;
+  gap: 8px !important;
+  justify-content: flex-end !important;
+}
+
+/* "Back on Track" — primary action */
+.intent-nudge-btn-action {
+  background: #3ea6ff !important;
+  color: #0f0f0f !important;
+  border: none !important;
+  border-radius: 8px !important;
+  padding: 8px 16px !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  transition: background 0.2s !important;
+}
+
+.intent-nudge-btn-action:hover {
+  background: #65b8ff !important;
+}
+
+/* "Dismiss" — subtle secondary */
+.intent-nudge-btn-dismiss {
+  background: #272727 !important;
+  color: #aaa !important;
+  border: none !important;
+  border-radius: 8px !important;
+  padding: 8px 16px !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  transition: background 0.2s, color 0.2s !important;
+}
+
+.intent-nudge-btn-dismiss:hover {
+  background: #333 !important;
+  color: #ccc !important;
+}
+
+/* Animations — Nudge */
+@keyframes intent-slide-down {
+  from { opacity: 0; transform: translateX(-50%) translateY(-100%); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+@keyframes intent-slide-up {
+  from { opacity: 1; transform: translateX(-50%) translateY(0); }
+  to   { opacity: 0; transform: translateX(-50%) translateY(-100%); }
 }
