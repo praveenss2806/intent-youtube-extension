@@ -1,5 +1,5 @@
 // =============================================================
-// Intent - YouTube Focus Extension
+// Intent - Focused YouTube Extension
 // Content script: runs in ISOLATED world on every YouTube page
 // =============================================================
 

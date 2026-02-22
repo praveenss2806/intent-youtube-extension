@@ -1,4 +1,4 @@
-# Intent — YouTube Focus Extension
+# Intent — Focused YouTube
 
 <p align="center">
   <img src="icons/icon128.png" alt="Intent logo" width="80" />

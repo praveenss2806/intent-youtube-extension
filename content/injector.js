@@ -1,5 +1,5 @@
 // =============================================================
-// Intent - YouTube Focus Extension
+// Intent - Focused YouTube Extension
 // Injector script: runs in MAIN world at document_start
 // Patches History API as fallback for SPA navigation detection
 // Primary detection uses yt-navigate-finish in content.js
