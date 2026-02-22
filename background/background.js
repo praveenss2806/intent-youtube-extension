@@ -10,3 +10,14 @@ chrome.runtime.onInstalled.addListener(() => {
     offTopic: 0
   });
 });
+
+// Clear session-specific state on browser startup (Chrome relaunch).
+// Stats (videosWatched, onTopic, offTopic) are preserved across sessions.
+// This ensures a fresh goal overlay appears on the first YouTube visit each session.
+chrome.runtime.onStartup.addListener(() => {
+  chrome.storage.local.set({
+    goal: null,
+    active: false,
+    casual: false
+  });
+});

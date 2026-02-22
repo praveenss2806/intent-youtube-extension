@@ -179,8 +179,11 @@ document.addEventListener('intent-url-change', (e) => {
  * Creates and injects a full-screen overlay on YouTube
  * asking the user for their goal or casual browsing mode.
  * Blocks YouTube interaction until a choice is made.
+ *
+ * Uses chrome.storage.local (cleared by onStartup in background.js)
+ * instead of sessionStorage so the overlay state is shared across all tabs.
  */
-function showGoalOverlay() {
+async function showGoalOverlay() {
   // Wait for body to be available
   if (!document.body) {
     document.addEventListener('DOMContentLoaded', () => showGoalOverlay());
@@ -190,9 +193,10 @@ function showGoalOverlay() {
   // Don't double-inject if overlay already exists
   if (document.getElementById('intent-goal-overlay')) return;
 
-  // Show overlay once per browser session (resets when Chrome restarts)
-  if (sessionStorage.getItem('intent-overlay-shown')) return;
-  sessionStorage.setItem('intent-overlay-shown', '1');
+  // Check storage: if user already set a goal or chose casual this session, skip overlay.
+  // onStartup clears these on browser restart, so overlay reappears each new session.
+  const { active, casual } = await chrome.storage.local.get(['active', 'casual']);
+  if (active || casual) return;
 
   createOverlayDOM();
 }
