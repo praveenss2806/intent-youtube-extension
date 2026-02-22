@@ -1,19 +1,23 @@
 /* =============================================================
    Intent - YouTube Focus Extension
-   Styles for goal overlay (injected into YouTube pages)
+   Styles for goal overlay + nudge modal (injected into YouTube)
    All classes prefixed with "intent-" to avoid CSS conflicts
    ============================================================= */
 
-/* Full-screen overlay — blurs and dims YouTube behind it */
+/* =============================================================
+   Goal Overlay — full-screen prompt shown on first visit
+   ============================================================= */
+
+/* Full-screen backdrop — blurs and dims YouTube */
 #intent-goal-overlay {
   position: fixed !important;
   top: 0 !important;
   left: 0 !important;
   width: 100vw !important;
   height: 100vh !important;
-  background: rgba(0, 0, 0, 0.75) !important;
-  backdrop-filter: blur(8px) !important;
-  -webkit-backdrop-filter: blur(8px) !important;
+  background: rgba(0, 0, 0, 0.7) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
   z-index: 99999 !important;
   display: flex !important;
   align-items: center !important;
@@ -26,25 +30,36 @@
   animation: intent-fade-out 0.3s ease-in forwards !important;
 }
 
-/* Centered card */
+/* Glass card — centered in viewport */
 .intent-overlay-card {
-  background: #181818 !important;
-  border: 1px solid #333 !important;
-  border-radius: 16px !important;
-  padding: 36px 32px !important;
-  width: 380px !important;
+  background: rgba(24, 24, 24, 0.75) !important;
+  backdrop-filter: blur(24px) !important;
+  -webkit-backdrop-filter: blur(24px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 20px !important;
+  padding: 40px 36px !important;
+  width: 400px !important;
   max-width: 90vw !important;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5) !important;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5),
+              inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
   text-align: center !important;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  animation: intent-scale-in 0.3s ease-out !important;
 }
 
-/* Logo */
+/* Logo — SVG icon + wordmark */
 .intent-overlay-logo {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 10px !important;
+  margin: 0 0 6px 0 !important;
+}
+
+.intent-overlay-logo span {
   font-size: 28px !important;
   font-weight: 700 !important;
   color: #fff !important;
-  margin: 0 0 6px 0 !important;
   letter-spacing: -0.5px !important;
 }
 
@@ -55,166 +70,228 @@
   margin: 0 0 24px 0 !important;
 }
 
-/* Text input */
+/* Glass text input */
 .intent-overlay-input {
   width: 100% !important;
   padding: 14px 16px !important;
-  border: 1px solid #333 !important;
-  border-radius: 10px !important;
-  background: #0f0f0f !important;
-  color: #e8e8e8 !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 12px !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: #f1f1f1 !important;
   font-size: 15px !important;
   outline: none !important;
-  margin-bottom: 14px !important;
+  margin-bottom: 16px !important;
   box-sizing: border-box !important;
-  transition: border-color 0.2s !important;
+  transition: border-color 0.2s, box-shadow 0.2s !important;
 }
 
 .intent-overlay-input:focus {
-  border-color: #3ea6ff !important;
+  border-color: #e53935 !important;
+  box-shadow: 0 0 0 3px rgba(229, 57, 53, 0.2) !important;
 }
 
 .intent-overlay-input::placeholder {
-  color: #555 !important;
+  color: #717171 !important;
 }
 
-/* Buttons */
+/* Button base */
 .intent-overlay-btn {
   display: block !important;
   width: 100% !important;
   padding: 12px 18px !important;
   border: none !important;
-  border-radius: 10px !important;
+  border-radius: 12px !important;
   font-size: 15px !important;
   font-weight: 600 !important;
   cursor: pointer !important;
-  transition: background 0.2s, opacity 0.2s !important;
   box-sizing: border-box !important;
+  transition: background 0.2s, box-shadow 0.2s, transform 0.1s !important;
 }
 
 .intent-overlay-btn + .intent-overlay-btn {
   margin-top: 10px !important;
 }
 
+.intent-overlay-btn:hover {
+  transform: translateY(-1px) !important;
+}
+
+.intent-overlay-btn:active {
+  transform: translateY(0) !important;
+}
+
+/* Gradient red primary button with glow */
 .intent-overlay-btn-primary {
-  background: #3ea6ff !important;
-  color: #0f0f0f !important;
+  background: linear-gradient(135deg, #e53935, #c62828) !important;
+  color: #fff !important;
+  box-shadow: 0 2px 12px rgba(229, 57, 53, 0.3) !important;
 }
 
 .intent-overlay-btn-primary:hover {
-  background: #65b8ff !important;
+  background: linear-gradient(135deg, #ff5252, #e53935) !important;
+  box-shadow: 0 4px 18px rgba(229, 57, 53, 0.4) !important;
 }
 
+/* Glass secondary button */
 .intent-overlay-btn-secondary {
-  background: #272727 !important;
+  background: rgba(255, 255, 255, 0.06) !important;
   color: #aaa !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
 }
 
 .intent-overlay-btn-secondary:hover {
-  background: #333 !important;
-  color: #ccc !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  color: #ddd !important;
 }
 
-/* Animations — Overlay */
+/* =============================================================
+   Nudge Blocking Modal — forces user to act on off-topic video
+   ============================================================= */
+
+/* Full-screen backdrop — blocks YouTube interaction */
+#intent-nudge-overlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background: rgba(0, 0, 0, 0.7) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  z-index: 99999 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  animation: intent-fade-in 0.3s ease-out !important;
+}
+
+/* Fade-out class */
+#intent-nudge-overlay.intent-nudge-overlay-hide {
+  animation: intent-fade-out 0.3s ease-in forwards !important;
+}
+
+/* Glass card — centered modal */
+.intent-nudge-card {
+  background: rgba(24, 24, 24, 0.75) !important;
+  backdrop-filter: blur(24px) !important;
+  -webkit-backdrop-filter: blur(24px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 20px !important;
+  padding: 36px 32px !important;
+  width: 380px !important;
+  max-width: 90vw !important;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5),
+              inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+  text-align: center !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
+  animation: intent-scale-in 0.3s ease-out !important;
+}
+
+/* Warning icon container */
+.intent-nudge-icon {
+  margin: 0 0 16px 0 !important;
+}
+
+/* Title */
+.intent-nudge-title {
+  font-size: 20px !important;
+  font-weight: 700 !important;
+  color: #f1f1f1 !important;
+  margin: 0 0 8px 0 !important;
+}
+
+/* Goal text */
+.intent-nudge-message {
+  color: #f1f1f1 !important;
+  font-size: 15px !important;
+  line-height: 1.4 !important;
+  margin: 0 0 4px 0 !important;
+}
+
+.intent-nudge-message strong {
+  color: #ff5252 !important;
+  font-weight: 600 !important;
+}
+
+/* Sub-text explaining why */
+.intent-nudge-sub {
+  color: #717171 !important;
+  font-size: 13px !important;
+  margin: 0 0 24px 0 !important;
+}
+
+/* Buttons — stacked vertically */
+.intent-nudge-actions {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+}
+
+/* "Back on Track" — gradient red primary */
+.intent-nudge-btn-action {
+  background: linear-gradient(135deg, #e53935, #c62828) !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: 12px !important;
+  padding: 14px 20px !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  box-shadow: 0 2px 12px rgba(229, 57, 53, 0.3) !important;
+  transition: background 0.2s, box-shadow 0.2s, transform 0.1s !important;
+}
+
+.intent-nudge-btn-action:hover {
+  background: linear-gradient(135deg, #ff5252, #e53935) !important;
+  box-shadow: 0 4px 18px rgba(229, 57, 53, 0.4) !important;
+  transform: translateY(-1px) !important;
+}
+
+.intent-nudge-btn-action:active {
+  transform: translateY(0) !important;
+}
+
+/* "Keep Watching" — glass secondary */
+.intent-nudge-btn-dismiss {
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: #aaa !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 12px !important;
+  padding: 12px 20px !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.1s !important;
+}
+
+.intent-nudge-btn-dismiss:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  color: #ddd !important;
+  transform: translateY(-1px) !important;
+}
+
+.intent-nudge-btn-dismiss:active {
+  transform: translateY(0) !important;
+}
+
+/* =============================================================
+   Animations — shared by overlay and nudge modal
+   ============================================================= */
+
 @keyframes intent-fade-in {
   from { opacity: 0; }
-  to { opacity: 1; }
+  to   { opacity: 1; }
 }
 
 @keyframes intent-fade-out {
   from { opacity: 1; }
-  to { opacity: 0; }
+  to   { opacity: 0; }
 }
 
-/* =============================================================
-   Nudge toast — non-intrusive banner for off-topic videos
-   ============================================================= */
-
-/* Toast container — fixed top-center, slides down from above viewport */
-.intent-nudge {
-  position: fixed !important;
-  top: 16px !important;
-  left: 50% !important;
-  transform: translateX(-50%) !important;
-  z-index: 9999 !important;
-  background: #181818 !important;
-  border: 1px solid #333 !important;
-  border-radius: 12px !important;
-  padding: 16px 20px !important;
-  max-width: 500px !important;
-  width: max-content !important;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.6) !important;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
-  animation: intent-slide-down 0.3s ease-out !important;
-}
-
-/* Slide-out class added before removal */
-.intent-nudge.intent-nudge-hide {
-  animation: intent-slide-up 0.3s ease-in forwards !important;
-}
-
-/* Message text */
-.intent-nudge-message {
-  color: #e8e8e8 !important;
-  font-size: 14px !important;
-  line-height: 1.4 !important;
-  margin: 0 0 12px 0 !important;
-}
-
-.intent-nudge-message strong {
-  color: #3ea6ff !important;
-  font-weight: 600 !important;
-}
-
-/* Button row */
-.intent-nudge-actions {
-  display: flex !important;
-  gap: 8px !important;
-  justify-content: flex-end !important;
-}
-
-/* "Back on Track" — primary action */
-.intent-nudge-btn-action {
-  background: #3ea6ff !important;
-  color: #0f0f0f !important;
-  border: none !important;
-  border-radius: 8px !important;
-  padding: 8px 16px !important;
-  font-size: 13px !important;
-  font-weight: 600 !important;
-  cursor: pointer !important;
-  transition: background 0.2s !important;
-}
-
-.intent-nudge-btn-action:hover {
-  background: #65b8ff !important;
-}
-
-/* "Dismiss" — subtle secondary */
-.intent-nudge-btn-dismiss {
-  background: #272727 !important;
-  color: #aaa !important;
-  border: none !important;
-  border-radius: 8px !important;
-  padding: 8px 16px !important;
-  font-size: 13px !important;
-  font-weight: 500 !important;
-  cursor: pointer !important;
-  transition: background 0.2s, color 0.2s !important;
-}
-
-.intent-nudge-btn-dismiss:hover {
-  background: #333 !important;
-  color: #ccc !important;
-}
-
-/* Animations — Nudge */
-@keyframes intent-slide-down {
-  from { opacity: 0; transform: translateX(-50%) translateY(-100%); }
-  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
-}
-
-@keyframes intent-slide-up {
-  from { opacity: 1; transform: translateX(-50%) translateY(0); }
-  to   { opacity: 0; transform: translateX(-50%) translateY(-100%); }
+/* Card scales up from center */
+@keyframes intent-scale-in {
+  from { opacity: 0; transform: scale(0.92); }
+  to   { opacity: 1; transform: scale(1); }
 }

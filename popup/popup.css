@@ -9,19 +9,33 @@ body {
   width: 320px;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background: #0f0f0f;
-  color: #e8e8e8;
+  color: #f1f1f1;
 }
 
 .container {
   padding: 24px 20px;
+  animation: popup-in 0.2s ease-out;
 }
 
-/* Logo */
+@keyframes popup-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Logo — SVG icon + wordmark */
 .logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+.logo-icon {
+  flex-shrink: 0;
+}
+.logo-text {
   font-size: 22px;
   font-weight: 700;
   color: #fff;
-  margin-bottom: 4px;
 }
 
 .tagline {
@@ -30,91 +44,106 @@ body {
   margin-bottom: 20px;
 }
 
-/* Text input */
+/* Glass text input */
 #goal-text {
   width: 100%;
   padding: 12px 14px;
-  border: 1px solid #333;
-  border-radius: 8px;
-  background: #1a1a1a;
-  color: #e8e8e8;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #f1f1f1;
   font-size: 14px;
   outline: none;
-  transition: border-color 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s;
   margin-bottom: 12px;
 }
 
 #goal-text:focus {
-  border-color: #3ea6ff;
+  border-color: #e53935;
+  box-shadow: 0 0 0 3px rgba(229, 57, 53, 0.2);
 }
 
 #goal-text::placeholder {
-  color: #555;
+  color: #717171;
 }
 
-/* Buttons */
+/* Buttons — shared base */
 .btn {
   display: block;
   width: 100%;
   padding: 10px 16px;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s, opacity 0.2s;
+  transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
 }
 
 .btn + .btn {
   margin-top: 8px;
 }
 
+/* Gradient red primary button with glow */
 .btn-primary {
-  background: #3ea6ff;
-  color: #0f0f0f;
+  background: linear-gradient(135deg, #e53935, #c62828);
+  color: #fff;
+  box-shadow: 0 2px 12px rgba(229, 57, 53, 0.25);
 }
 
 .btn-primary:hover {
-  background: #65b8ff;
+  background: linear-gradient(135deg, #ff5252, #e53935);
+  box-shadow: 0 4px 18px rgba(229, 57, 53, 0.35);
+  transform: translateY(-1px);
 }
 
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+/* Glass secondary button */
 .btn-secondary {
-  background: #272727;
+  background: rgba(255, 255, 255, 0.06);
   color: #aaa;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
 }
 
 .btn-secondary:hover {
-  background: #333;
-  color: #ccc;
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: #ddd;
 }
 
-/* Cards for active goal / casual mode */
+/* Glass cards for active goal / casual mode */
 .active-goal-card,
 .casual-card {
-  background: #1a1a1a;
-  border: 1px solid #333;
-  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
   padding: 14px;
   margin-bottom: 12px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 .label {
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: #3ea6ff;
+  color: #e53935;
   font-weight: 600;
 }
 
 .active-goal-card p,
 .casual-card p {
   font-size: 15px;
-  color: #e8e8e8;
+  color: #f1f1f1;
   margin-top: 6px;
   line-height: 1.4;
 }
 
-/* Stats row — 3 counters in a horizontal row */
+/* Stats row — 3 glass counters */
 .stats-row {
   display: flex;
   gap: 8px;
@@ -123,9 +152,9 @@ body {
 
 .stat {
   flex: 1;
-  background: #1a1a1a;
-  border: 1px solid #333;
-  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
   padding: 10px 8px;
   text-align: center;
 }
@@ -134,7 +163,7 @@ body {
   display: block;
   font-size: 20px;
   font-weight: 700;
-  color: #e8e8e8;
+  color: #f1f1f1;
 }
 
 .stat-on {
@@ -171,7 +200,7 @@ body {
 }
 
 .btn-text:hover {
-  color: #aaa;
+  color: #ccc;
 }
 
 /* Utility */

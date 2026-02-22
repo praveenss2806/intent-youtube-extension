@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head><title>Generate Intent Icons</title></head>
+<body style="background:#222;color:#fff;font-family:sans-serif;padding:40px;text-align:center">
+  <h1>Intent Icon Generator</h1>
+  <p>Click each button to download the PNG icon at that size.</p>
+  <div id="previews" style="display:flex;gap:40px;justify-content:center;margin:40px 0;align-items:end"></div>
+  <script>
+    // SVG source for the gradient circle-I icon
+    const svgSource = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+      <defs>
+        <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#ff5252"/>
+          <stop offset="100%" stop-color="#e53935"/>
+        </linearGradient>
+      </defs>
+      <circle cx="64" cy="64" r="60" fill="url(#g)"/>
+      <text x="64" y="88" text-anchor="middle" fill="#fff"
+            font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif"
+            font-size="80" font-weight="700">I</text>
+    </svg>`;
+
+    const sizes = [16, 48, 128];
+
+    sizes.forEach(size => {
+      const container = document.createElement('div');
+
+      // Render SVG to canvas at target size
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+
+      const img = new Image();
+      const blob = new Blob([svgSource], { type: 'image/svg+xml' });
+      const url = URL.createObjectURL(blob);
+
+      img.onload = () => {
+        ctx.drawImage(img, 0, 0, size, size);
+        URL.revokeObjectURL(url);
+
+        // Preview
+        const preview = document.createElement('img');
+        preview.src = canvas.toDataURL('image/png');
+        preview.style.cssText = `width:${Math.max(size,48)}px;height:${Math.max(size,48)}px;image-rendering:pixelated;border:1px solid #555;border-radius:8px`;
+        container.appendChild(preview);
+
+        // Download button
+        const btn = document.createElement('button');
+        btn.textContent = `Download icon${size}.png`;
+        btn.style.cssText = 'display:block;margin:12px auto 0;padding:8px 16px;background:#e53935;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:14px';
+        btn.onclick = () => {
+          const a = document.createElement('a');
+          a.href = canvas.toDataURL('image/png');
+          a.download = `icon${size}.png`;
+          a.click();
+        };
+        container.appendChild(btn);
+      };
+      img.src = url;
+
+      const label = document.createElement('p');
+      label.textContent = `${size}×${size}`;
+      label.style.marginBottom = '8px';
+      container.appendChild(label);
+
+      document.getElementById('previews').appendChild(container);
+    });
+  </script>
+</body>
+</html>

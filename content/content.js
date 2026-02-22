@@ -57,12 +57,11 @@ function checkRelevanceKeyword(goal, title) {
 
 // Tracks dismissed video URLs per page session — won't re-nudge the same video
 const _dismissedVideos = new Set();
-let _nudgeAutoDismissTimer = null;
 
 /**
- * Shows a slide-down toast banner when the user navigates to an off-topic video.
- * Includes "Back on Track" (YouTube search) and "Dismiss" buttons.
- * Auto-dismisses after 10 seconds.
+ * Shows a blocking modal when the user navigates to an off-topic video.
+ * Full-screen backdrop (blur + dim) prevents YouTube interaction.
+ * No auto-dismiss — user MUST click "Back on Track" or "Keep Watching".
  */
 function showNudge(goal) {
   const currentUrl = location.href;
@@ -70,51 +69,57 @@ function showNudge(goal) {
   // Skip if user already dismissed nudge for this video
   if (_dismissedVideos.has(currentUrl)) return;
 
-  // Remove any existing nudge to prevent stacking
-  const existing = document.querySelector('.intent-nudge');
+  // Remove any existing nudge modal to prevent stacking
+  const existing = document.getElementById('intent-nudge-overlay');
   if (existing) existing.remove();
-  clearTimeout(_nudgeAutoDismissTimer);
 
-  // Build nudge toast DOM
-  const nudge = document.createElement('div');
-  nudge.className = 'intent-nudge';
-  nudge.innerHTML = `
-    <p class="intent-nudge-message">
-      You're drifting from your goal: <strong>${goal}</strong>
-    </p>
-    <div class="intent-nudge-actions">
-      <button class="intent-nudge-btn-dismiss">Dismiss</button>
-      <button class="intent-nudge-btn-action">Back on Track</button>
+  // Build blocking modal DOM — full-screen overlay with centered glass card
+  const overlay = document.createElement('div');
+  overlay.id = 'intent-nudge-overlay';
+  overlay.innerHTML = `
+    <div class="intent-nudge-card">
+      <div class="intent-nudge-icon">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="12" r="11" stroke="#e53935" stroke-width="2" fill="rgba(229,57,53,0.1)"/>
+          <path d="M12 8v5" stroke="#e53935" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="12" cy="16" r="1" fill="#e53935"/>
+        </svg>
+      </div>
+      <h2 class="intent-nudge-title">You're drifting off-topic</h2>
+      <p class="intent-nudge-message">
+        Your goal: <strong>${goal}</strong>
+      </p>
+      <p class="intent-nudge-sub">This video doesn't seem related to your goal.</p>
+      <div class="intent-nudge-actions">
+        <button class="intent-nudge-btn-action">Back on Track</button>
+        <button class="intent-nudge-btn-dismiss">Keep Watching</button>
+      </div>
     </div>
   `;
 
-  document.body.appendChild(nudge);
+  document.body.appendChild(overlay);
 
   // "Back on Track" — navigate to YouTube search for the goal (same tab)
-  nudge.querySelector('.intent-nudge-btn-action').addEventListener('click', () => {
+  overlay.querySelector('.intent-nudge-btn-action').addEventListener('click', () => {
     window.location.href =
       'https://www.youtube.com/results?search_query=' + encodeURIComponent(goal);
   });
 
-  // "Dismiss" — slide out + add to cooldown so this video won't trigger again
-  nudge.querySelector('.intent-nudge-btn-dismiss').addEventListener('click', () => {
+  // "Keep Watching" — deliberate choice to stay off-topic, add cooldown
+  overlay.querySelector('.intent-nudge-btn-dismiss').addEventListener('click', () => {
     _dismissedVideos.add(currentUrl);
-    dismissNudge(nudge);
+    dismissNudge(overlay);
   });
-
-  // Auto-dismiss after 10 seconds if user doesn't interact
-  _nudgeAutoDismissTimer = setTimeout(() => dismissNudge(nudge), 10000);
 }
 
 /**
- * Smoothly removes the nudge toast with a slide-up animation.
+ * Smoothly removes the nudge modal with a fade-out animation.
  */
-function dismissNudge(nudge) {
-  if (!nudge || !nudge.parentNode) return; // already removed
-  clearTimeout(_nudgeAutoDismissTimer);
-  nudge.classList.add('intent-nudge-hide');
-  // Remove from DOM after slide-up animation completes
-  setTimeout(() => nudge.remove(), 300);
+function dismissNudge(overlay) {
+  if (!overlay || !overlay.parentNode) return; // already removed
+  overlay.classList.add('intent-nudge-overlay-hide');
+  // Remove from DOM after fade-out animation completes
+  setTimeout(() => overlay.remove(), 300);
 }
 
 // --- Phase 3B: AI relevance bridge (ISOLATED → MAIN world) ---
@@ -202,7 +207,21 @@ function createOverlayDOM() {
   overlay.id = 'intent-goal-overlay';
   overlay.innerHTML = `
     <div class="intent-overlay-card">
-      <h1 class="intent-overlay-logo">Intent</h1>
+      <div class="intent-overlay-logo">
+        <svg width="36" height="36" viewBox="0 0 28 28" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="intent-logo-grad-overlay" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#ff5252"/>
+              <stop offset="100%" stop-color="#e53935"/>
+            </linearGradient>
+          </defs>
+          <circle cx="14" cy="14" r="13" fill="url(#intent-logo-grad-overlay)"/>
+          <text x="14" y="19.5" text-anchor="middle" fill="#fff"
+                font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif"
+                font-size="16" font-weight="700">I</text>
+        </svg>
+        <span>Intent</span>
+      </div>
       <p class="intent-overlay-tagline">What brings you to YouTube?</p>
 
       <input
@@ -335,9 +354,9 @@ function debouncedVideoNavigation(url) {
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area !== 'local') return;
 
-  // If goal was cleared or user switched to casual, dismiss any active nudge
+  // If goal was cleared or user switched to casual, dismiss any active nudge modal
   if (changes.active && !changes.active.newValue) {
-    const nudge = document.querySelector('.intent-nudge');
+    const nudge = document.getElementById('intent-nudge-overlay');
     if (nudge) dismissNudge(nudge);
   }
 

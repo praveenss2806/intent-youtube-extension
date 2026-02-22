@@ -8,7 +8,21 @@
 </head>
 <body>
   <div class="container">
-    <h1 class="logo">Intent</h1>
+    <div class="logo">
+      <svg class="logo-icon" width="28" height="28" viewBox="0 0 28 28" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="intent-logo-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#ff5252"/>
+            <stop offset="100%" stop-color="#e53935"/>
+          </linearGradient>
+        </defs>
+        <circle cx="14" cy="14" r="13" fill="url(#intent-logo-grad)"/>
+        <text x="14" y="19.5" text-anchor="middle" fill="#fff"
+              font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif"
+              font-size="16" font-weight="700">I</text>
+      </svg>
+      <span class="logo-text">Intent</span>
+    </div>
     <p class="tagline">What brings you to YouTube?</p>
 
     <!-- Goal input view (shown when no active goal) -->
