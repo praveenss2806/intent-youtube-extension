@@ -190,14 +190,22 @@ async function showGoalOverlay() {
     return;
   }
 
-  // Don't double-inject if overlay already exists
+  // Don't double-inject if any overlay already exists
   if (document.getElementById('intent-goal-overlay')) return;
+  if (document.getElementById('intent-casual-overlay')) return;
 
-  // Check storage: if user already set a goal or chose casual this session, skip overlay.
+  // Check storage: skip if active goal, show casual reminder if casual mode.
   // onStartup clears these on browser restart, so overlay reappears each new session.
   const { active, casual } = await chrome.storage.local.get(['active', 'casual']);
-  if (active || casual) return;
+  if (active) return; // goal set — no overlay needed
 
+  // Casual mode — show a reminder overlay each new tab instead of skipping
+  if (casual) {
+    createCasualOverlayDOM();
+    return;
+  }
+
+  // First visit (no choice yet) — show full goal input overlay
   createOverlayDOM();
 }
 
@@ -276,6 +284,59 @@ function createOverlayDOM() {
     chrome.storage.local.set({ goal: null, active: false, casual: true }, () => {
       dismissOverlay(overlay);
     });
+  });
+}
+
+/**
+ * Builds the casual mode reminder overlay — shown on every new YouTube tab
+ * when user previously chose "Just Browsing". Offers to continue or set a goal.
+ */
+function createCasualOverlayDOM() {
+  const overlay = document.createElement('div');
+  overlay.id = 'intent-casual-overlay';
+  overlay.innerHTML = `
+    <div class="intent-overlay-card">
+      <div class="intent-overlay-logo">
+        <svg width="36" height="36" viewBox="0 0 28 28" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="intent-logo-grad-casual" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#ff5252"/>
+              <stop offset="100%" stop-color="#e53935"/>
+            </linearGradient>
+          </defs>
+          <circle cx="14" cy="14" r="13" fill="url(#intent-logo-grad-casual)"/>
+          <text x="14" y="19.5" text-anchor="middle" fill="#fff"
+                font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif"
+                font-size="16" font-weight="700">I</text>
+        </svg>
+        <span>Intent</span>
+      </div>
+      <p class="intent-casual-message">You're in casual browsing mode</p>
+      <p class="intent-casual-subtext">Would you like to set a goal instead?</p>
+
+      <button id="intent-casual-set-goal" class="intent-overlay-btn intent-overlay-btn-primary">
+        Set a Goal
+      </button>
+      <button id="intent-casual-continue" class="intent-overlay-btn intent-overlay-btn-secondary">
+        Continue Browsing
+      </button>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+
+  // "Set a Goal" — clear casual mode, dismiss, then show goal input overlay
+  document.getElementById('intent-casual-set-goal').addEventListener('click', () => {
+    chrome.storage.local.set({ casual: false }, () => {
+      dismissOverlay(overlay);
+      // Small delay so fade-out finishes before new overlay appears
+      setTimeout(() => createOverlayDOM(), 320);
+    });
+  });
+
+  // "Continue Browsing" — keep casual mode, just dismiss
+  document.getElementById('intent-casual-continue').addEventListener('click', () => {
+    dismissOverlay(overlay);
   });
 }
 

@@ -146,6 +146,47 @@
 }
 
 /* =============================================================
+   Casual Reminder Overlay — shown on each new tab in casual mode
+   ============================================================= */
+
+/* Full-screen backdrop — same as goal overlay */
+#intent-casual-overlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  background: rgba(0, 0, 0, 0.7) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  z-index: 99999 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  animation: intent-fade-in 0.3s ease-out !important;
+}
+
+/* Fade-out class — reuses same animation as goal overlay */
+#intent-casual-overlay.intent-overlay-hide {
+  animation: intent-fade-out 0.3s ease-in forwards !important;
+}
+
+/* Casual mode message — large white text */
+.intent-casual-message {
+  font-size: 18px !important;
+  font-weight: 600 !important;
+  color: #f1f1f1 !important;
+  margin: 0 0 6px 0 !important;
+}
+
+/* Sub-text prompt */
+.intent-casual-subtext {
+  font-size: 14px !important;
+  color: #888 !important;
+  margin: 0 0 24px 0 !important;
+}
+
+/* =============================================================
    Nudge Blocking Modal — forces user to act on off-topic video
    ============================================================= */
 
